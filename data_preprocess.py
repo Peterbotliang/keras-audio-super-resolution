@@ -3,11 +3,13 @@ import os
 import librosa
 import numpy as np
 from tqdm import tqdm
+import scipy.signal as signal
+import soundfile as sf
 
-clean_train_folder = './clean_trainset_56spk_wav'
-noisy_train_folder = './noisy_trainset_56spk_wav'
-clean_test_folder = './clean_testset_wav'
-noisy_test_folder = './noisy_testset_wav'
+clean_train_folder = './timit_clean/train'
+noisy_train_folder = './timit_noisy/train'
+clean_test_folder = './timit_clean/test'
+noisy_test_folder = './timit_noisy/test'
 serialized_train_folder = './serialized_train_data'
 serialized_test_folder = './serialized_test_data'
 window_size = 2 ** 14  # about 1 second of samples
@@ -28,6 +30,36 @@ def slice_signal(file, window_size, stride, sample_rate):
         slices.append(slice_sig)
     return slices
 
+def prepare_TIMIT(data_type):
+    '''
+    Prepare lowpass TIMIT
+    '''
+
+    if data_type == 'train':
+        clean_folder = clean_train_folder
+        noisy_folder = noisy_train_folder
+    else:
+        clean_folder = clean_test_folder
+        noisy_folder = noisy_test_folder
+    if not os.path.exists(noisy_folder):
+        os.makedirs(noisy_folder)
+
+    LPF_sos = signal.butter(N = 5,
+                            Wn = sample_rate / 4,
+                            btype = 'low',
+                            output='sos',
+                            fs = sample_rate)
+
+    for root, dirs, files in os.walk(clean_folder):
+        for filename in tqdm(files):
+            clean_file = os.path.join(clean_folder, filename)
+            noisy_file = os.path.join(noisy_folder, filename)
+
+            wave_clean, fs = sf.read(clean_file)
+            wave_noisy = signal.upfirdn(h = [1.0], x = wave_clean, up = 1, down = 2)
+            wave_noisy = signal.upfirdn(h = [1.0], x = wave_noisy, up = 2, down = 1)
+            wave_noisy = signal.sosfilt(LPF_sos, wave_noisy)
+            sf.write(noisy_file, wave_noisy, sample_rate)
 
 def process_and_serialize(data_type):
     """
@@ -81,6 +113,8 @@ def data_verify(data_type):
 
 
 if __name__ == '__main__':
+    # prepare_TIMIT('train')
+    # prepare_TIMIT('test')
     process_and_serialize('train')
     data_verify('train')
     process_and_serialize('test')
