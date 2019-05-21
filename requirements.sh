@@ -1,4 +1,6 @@
 apt-get install python3.6
+wget https://bootstrap.pypa.io/get-pip.py
+python3.6 get-pip.py
 pip install jupyter
 pip install librosa
 pip install tqdm
