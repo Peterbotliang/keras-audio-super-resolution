@@ -1,3 +1,6 @@
+./serialized_train_data_cubic
 ./serialized_trian_data
+./serialized_test_data_cubic
 ./serialized_test_data
 ./model
+./logs
