@@ -12,7 +12,7 @@ clean_test_folder = './timit_clean/test'
 noisy_test_folder = './timit_noisy/test'
 serialized_train_folder = './serialized_train_data'
 serialized_test_folder = './serialized_test_data'
-window_size = 2 ** 12  # about 1 second of samples
+window_size = 2 ** 14  # about 1 second of samples
 sample_rate = 16000
 
 
