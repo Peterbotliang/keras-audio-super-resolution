@@ -112,9 +112,9 @@ def data_verify(data_type):
 
 
 if __name__ == '__main__':
-    prepare_dataset('train')
-    prepare_dataset('test')
-    # process_and_serialize('train')
-    # data_verify('train')
-    # process_and_serialize('test')
-    # data_verify('test')
+    # prepare_dataset('train')
+    # prepare_dataset('test')
+    process_and_serialize('train')
+    data_verify('train')
+    process_and_serialize('test')
+    data_verify('test')
