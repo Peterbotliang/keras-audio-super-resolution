@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import os
+from tqdm import tqdm
 from utils import emphasis
 import tensorflow.keras.backend as K
 
@@ -19,19 +20,20 @@ dataset = dataset.map(lambda filename : tf.py_func(_load_numpy,
                                               [filename, 0.95],
                                               [tf.float32, tf.float32]))
 
-dataset = dataset.batch(32)
+dataset = dataset.batch(1)
 dataset = dataset.repeat()
-# iterator = dataset.make_one_shot_iterator()
-# el = iterator.get_next()
+iterator = dataset.make_one_shot_iterator()
+el = iterator.get_next()
 # with tf.Session() as sess:
-#     print(type(sess.run(el)), len(sess.run(el)))
-#     print(sess.run(el)[0].shape)
-#     print(sess.run(el)[1].shape)
-#     # print(sess.run(el)[2].shape)
-#     print(type(sess.run(el)[0]))
-#     print(type(sess.run(el)[1]))
-#     # print(type(sess.run(el)[2]))
-
+#     for i in tqdm(range(2805)):
+#         pair = sess.run(el)
+#         if not pair[0].shape == (32, 16384, 1):
+#             print (pair[0].shape)
+#         if not pair[1].shape == (32, 16384, 1):
+#             print(pair[1].shape)
+        # print(type(sess.run(el)), len(sess.run(el)))
+        # print(type(sess.run(el)[0]), sess.run(el)[0].shape)
+        # print(type(sess.run(el)[1]), sess.run(el)[1].shape)
 # Generator
 
 def Conv1DTranspose(input_tensor, filters, kernel_size, strides=2, padding='same', activation=None):
@@ -108,7 +110,7 @@ x_dec1 = tf.keras.layers.PReLU()(x_dec1)
 x_dec1_c = tf.keras.layers.concatenate([x_dec1, x_enc1], axis = 0)
 x_final = Conv1DTranspose(x_dec1_c, 1, 32, 2, 'same', activation='tanh')
 
-G = tf.keras.Model(inputs = [clean, noisy], outputs = x_final)
+G = tf.keras.Model(inputs = [noisy], outputs = x_final)
 
 optim = tf.keras.optimizers.Adam(lr=1e-4)
 def G_loss(true, fake):
@@ -116,10 +118,12 @@ def G_loss(true, fake):
         return 1 * K.mean(K.abs(fake - true))
     return lossfun
 
-G.compile(loss = G_loss(clean, x_final),
+# G.compile(loss = G_loss(clean, x_final),
+#           optimizer = optim)
+
+G.compile(loss = tf.keras.losses.mean_absolute_error,
           optimizer = optim)
 G.summary()
 tf.keras.utils.plot_model(G, to_file='./generator.png', show_shapes=True)
 
-G.fit(dataset,
-      steps_per_epoch=1)
+G.fit(dataset, steps_per_epoch = 5, verbose = 1)
