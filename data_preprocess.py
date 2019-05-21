@@ -5,13 +5,14 @@ import numpy as np
 from tqdm import tqdm
 import scipy.signal as signal
 import soundfile as sf
+import scipy
 
-clean_train_folder = './timit_clean/train'
-noisy_train_folder = './timit_noisy/train'
-clean_test_folder = './timit_clean/test'
-noisy_test_folder = './timit_noisy/test'
-serialized_train_folder = './serialized_train_data'
-serialized_test_folder = './serialized_test_data'
+clean_train_folder = '../dataset/timit_clean/train'
+noisy_train_folder = '../dataset/timit_cubic/train'
+clean_test_folder = '../dataset/timit_clean/test'
+noisy_test_folder = '../dataset/timit_cubic/test'
+serialized_train_folder = './serialized_train_data_cubic'
+serialized_test_folder = './serialized_test_data_cubic'
 window_size = 2 ** 12  # about 1 second of samples
 sample_rate = 16000
 
@@ -57,7 +58,10 @@ def prepare_dataset(data_type):
 
             wave_clean, fs = sf.read(clean_file)
             wave_noisy = signal.upfirdn(h = [1.0], x = wave_clean, up = 1, down = 2)
-            wave_noisy = signal.resample(wave_noisy, 2 * len(wave_noisy))
+#             wave_noisy = signal.resample(wave_noisy, 2 * len(wave_noisy))
+            cs = scipy.interpolate.CubicSpline(range(len(wave_noisy)), wave_noisy)
+            xs = np.arange(0, len(wave_noisy), 0.5)
+            wave_noisy = cs(xs)
             sf.write(noisy_file, wave_noisy, sample_rate)
 
 def process_and_serialize(data_type):
@@ -112,8 +116,8 @@ def data_verify(data_type):
 
 
 if __name__ == '__main__':
-    # prepare_dataset('train')
-    # prepare_dataset('test')
+    prepare_dataset('train')
+    prepare_dataset('test')
     process_and_serialize('train')
     data_verify('train')
     process_and_serialize('test')
