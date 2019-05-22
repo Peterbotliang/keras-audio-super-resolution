@@ -7,13 +7,16 @@ import scipy.signal as signal
 import soundfile as sf
 import scipy
 
-clean_train_folder = './dataset/timit_clean/train'
-noisy_train_folder = './dataset/timit_cubic/train'
-clean_test_folder = './dataset/timit_clean/test'
-noisy_test_folder = './dataset/timit_cubic/test'
-serialized_train_folder = './serialized_train_data_cubic'
-serialized_test_folder = './serialized_test_data_cubic'
-window_size = 2 ** 12  # about 1 second of samples
+clean_train_folder = '../dataset/timit_clean_new/train'
+noisy_train_folder = '../dataset/timit_cubic_new/train'
+clean_test_folder = '../dataset/timit_clean_new/test'
+noisy_test_folder = '../dataset/timit_cubic_new/test'
+clean_val_folder = '../dataset/timit_clean_new/val'
+noisy_val_folder = '../dataset/timit_cubic_new/val'
+serialized_train_folder = './serialized_train_data_new_cubic'
+serialized_test_folder = './serialized_test_data__new_cubic'
+serialized_val_folder = './serialized_val_data_new_cubic'
+window_size = 2 ** 13  # about 0.5 second of samples
 sample_rate = 16000
 
 
@@ -45,12 +48,6 @@ def prepare_dataset(data_type):
     if not os.path.exists(noisy_folder):
         os.makedirs(noisy_folder)
 
-    LPF_sos = signal.butter(N = 5,
-                            Wn = sample_rate / 4,
-                            btype = 'low',
-                            output='sos',
-                            fs = sample_rate)
-
     for root, dirs, files in os.walk(clean_folder):
         for filename in tqdm(files):
             clean_file = os.path.join(clean_folder, filename)
@@ -74,10 +71,14 @@ def process_and_serialize(data_type):
         clean_folder = clean_train_folder
         noisy_folder = noisy_train_folder
         serialized_folder = serialized_train_folder
-    else:
+    elif data_type == 'test':
         clean_folder = clean_test_folder
         noisy_folder = noisy_test_folder
         serialized_folder = serialized_test_folder
+    else:
+        clean_folder = clean_val_folder
+        noisy_folder = noisy_val_folder
+        serialized_folder = serialized_val_folder
     if not os.path.exists(serialized_folder):
         os.makedirs(serialized_folder)
 
@@ -116,9 +117,11 @@ def data_verify(data_type):
 
 
 if __name__ == '__main__':
-    prepare_dataset('train')
-    prepare_dataset('test')
+#     prepare_dataset('train')
+#     prepare_dataset('test')
     process_and_serialize('train')
     data_verify('train')
     process_and_serialize('test')
     data_verify('test')
+    process_and_serialize('val')
+    data_verify('val')
