@@ -7,10 +7,10 @@ import scipy.signal as signal
 import soundfile as sf
 import scipy
 
-clean_train_folder = '../dataset/timit_clean/train'
-noisy_train_folder = '../dataset/timit_cubic/train'
-clean_test_folder = '../dataset/timit_clean/test'
-noisy_test_folder = '../dataset/timit_cubic/test'
+clean_train_folder = './dataset/timit_clean/train'
+noisy_train_folder = './dataset/timit_cubic/train'
+clean_test_folder = './dataset/timit_clean/test'
+noisy_test_folder = './dataset/timit_cubic/test'
 serialized_train_folder = './serialized_train_data_cubic'
 serialized_test_folder = './serialized_test_data_cubic'
 window_size = 2 ** 12  # about 1 second of samples
@@ -116,8 +116,8 @@ def data_verify(data_type):
 
 
 if __name__ == '__main__':
-    prepare_dataset('train')
-    prepare_dataset('test')
+    # prepare_dataset('train')
+    # prepare_dataset('test')
     process_and_serialize('train')
     data_verify('train')
     process_and_serialize('test')
