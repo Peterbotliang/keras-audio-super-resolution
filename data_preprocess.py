@@ -7,15 +7,15 @@ import scipy.signal as signal
 import soundfile as sf
 import scipy
 
-clean_train_folder = '../dataset/timit_clean_new/train'
-noisy_train_folder = '../dataset/timit_cubic_new/train'
-clean_test_folder = '../dataset/timit_clean_new/test'
-noisy_test_folder = '../dataset/timit_cubic_new/test'
-clean_val_folder = '../dataset/timit_clean_new/val'
-noisy_val_folder = '../dataset/timit_cubic_new/val'
-serialized_train_folder = './serialized_train_data_new_cubic'
-serialized_test_folder = './serialized_test_data__new_cubic'
-serialized_val_folder = './serialized_val_data_new_cubic'
+clean_train_folder = '../dataset/VCTK_singlespeaker_clean/train'
+noisy_train_folder = '../dataset/VCTK_singlespeaker_cubic/train'
+clean_test_folder = '../dataset/VCTK_singlespeaker_clean/test'
+noisy_test_folder = '../dataset/VCTK_singlespeaker_cubic/test'
+clean_val_folder = '../dataset/VCTK_singlespeaker_clean/val'
+noisy_val_folder = '../dataset/VCTK_singlespeaker_cubic/val'
+serialized_train_folder = './serialized_train_data_VCTK_single'
+serialized_test_folder = './serialized_test_data_VCTK_single'
+serialized_val_folder = './serialized_val_data_VCTK_single'
 window_size = 2 ** 13  # about 0.5 second of samples
 sample_rate = 16000
 
@@ -33,33 +33,6 @@ def slice_signal(file, window_size, stride, sample_rate):
         slice_sig = wav[start_idx:end_idx]
         slices.append(slice_sig)
     return slices
-
-def prepare_dataset(data_type):
-    '''
-    Prepare lowpass
-    '''
-
-    if data_type == 'train':
-        clean_folder = clean_train_folder
-        noisy_folder = noisy_train_folder
-    else:
-        clean_folder = clean_test_folder
-        noisy_folder = noisy_test_folder
-    if not os.path.exists(noisy_folder):
-        os.makedirs(noisy_folder)
-
-    for root, dirs, files in os.walk(clean_folder):
-        for filename in tqdm(files):
-            clean_file = os.path.join(clean_folder, filename)
-            noisy_file = os.path.join(noisy_folder, filename)
-
-            wave_clean, fs = sf.read(clean_file)
-            wave_noisy = signal.upfirdn(h = [1.0], x = wave_clean, up = 1, down = 2)
-#             wave_noisy = signal.resample(wave_noisy, 2 * len(wave_noisy))
-            cs = scipy.interpolate.CubicSpline(range(len(wave_noisy)), wave_noisy)
-            xs = np.arange(0, len(wave_noisy), 0.5)
-            wave_noisy = cs(xs)
-            sf.write(noisy_file, wave_noisy, sample_rate)
 
 def process_and_serialize(data_type):
     """
@@ -82,6 +55,12 @@ def process_and_serialize(data_type):
     if not os.path.exists(serialized_folder):
         os.makedirs(serialized_folder)
 
+    LPF_sos = signal.butter(N = 4,
+                            Wn = sample_rate // 4,
+                            btype = 'low',
+                            output = 'sos',
+                            fs = sample_rate)    
+        
     # walk through the path, slice the audio file, and save the serialized result
     for root, dirs, files in os.walk(clean_folder):
         if len(files) == 0:
@@ -119,9 +98,11 @@ def data_verify(data_type):
 if __name__ == '__main__':
 #     prepare_dataset('train')
 #     prepare_dataset('test')
-    process_and_serialize('train')
-    data_verify('train')
-    process_and_serialize('test')
-    data_verify('test')
     process_and_serialize('val')
     data_verify('val')
+    process_and_serialize('test')
+    data_verify('test')
+    process_and_serialize('train')
+    data_verify('train')
+
+
