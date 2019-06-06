@@ -1,6 +1,5 @@
 apt-get install git
 apt-get install --no-install-recommends libcudnn7=7.5.1.10-1+cuda10.0 libcudnn7-dev=7.5.1.10-1+cuda10.0
-apt-get install python3-pip
 pip install jupyter
 pip install librosa
 pip install tqdm
